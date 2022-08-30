@@ -1,6 +1,7 @@
 #include <SFML/Graphics.hpp>
 #include <vector>
 #include <iostream>
+#include <algorithm>
 
 using namespace sf;
 
@@ -23,13 +24,15 @@ enum Direcion
 
 std::vector<Posicion> snake;
 
-bool Move(Direcion Dir, Posicion &FoodPos);
+bool Move(Direcion Dir, Posicion &FoodPos, uint32_t &score);
 void SpawnFood(Posicion &FoodPos);
 
 int main()
 {
     Direcion Dir = Direcion::Up;
     Clock timer;
+    char c[16];
+    uint32_t score = 1;
     
     snake.push_back(Posicion{Width/2, Height/2});
 
@@ -96,9 +99,9 @@ int main()
                 break;
             }
         }
-        if(timer.getElapsedTime().asMilliseconds() >= (Delay-snake.size()*2))
+        if(timer.getElapsedTime().asMilliseconds() >= std::max(Delay-snake.size()*2, 100.0f))
         {
-            if(!Move(Dir, FoodPos))
+            if(!Move(Dir, FoodPos, score))
             {
             window.close();
             break;
@@ -114,13 +117,19 @@ int main()
             Cell.setPosition(snake[i].X*CellSize, snake[i].Y*CellSize);
             window.draw(Cell);
         }
+
+        
+        sprintf(c, "SNAKE score: %d",score);
+        std::string str(c);
+        window.setTitle(str);
+
         window.display();
     }
 
     return 0;
 }
 
-bool Move(Direcion Dir, Posicion &FoodPos)
+bool Move(Direcion Dir, Posicion &FoodPos, uint32_t &score)
 {
     Posicion NextStep = snake[snake.size()-1];
     switch(Dir)
@@ -170,6 +179,7 @@ bool Move(Direcion Dir, Posicion &FoodPos)
     else
     {
         SpawnFood(FoodPos);
+        score++;
     }
     
     return true;
